@@ -6,7 +6,7 @@ The prototype contains two representative tools: a KYC review workflow with serv
 
 [GitHub repository](https://github.com/AarzuGupta/devin-fintech-tools-poc) · [KYC PR #1](https://github.com/AarzuGupta/devin-fintech-tools-poc/pull/1) · [Refunds PR #2](https://github.com/AarzuGupta/devin-fintech-tools-poc/pull/2) · [Maintenance PR #3](https://github.com/AarzuGupta/devin-fintech-tools-poc/pull/3)
 
-**Try it:** [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/AarzuGupta/devin-fintech-tools-poc?ref=devin/high-risk-approval-policy)
+**Try it:** [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/AarzuGupta/devin-fintech-tools-poc)
 
 The Codespace installs dependencies, seeds the synthetic database, builds, and starts the production app on port 3000, which opens in a browser tab (first start takes a few minutes). It needs a GitHub account with access to this repository and uses that account's Codespaces quota. There is no hosted deployment; you can also run it locally (below).
 
