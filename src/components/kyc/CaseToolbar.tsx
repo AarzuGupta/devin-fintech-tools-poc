@@ -23,7 +23,7 @@ function FilterSelect({
   const id = useId();
   return (
     <div className="flex items-center gap-1.5">
-      <label htmlFor={id} className="text-fg-muted">
+      <label htmlFor={id} className="text-[12px] font-medium text-fg-muted">
         {label}
       </label>
       <Select id={id} size="small" value={params.get(param) ?? ""} onChange={(_, d) => setParams({ [param]: d.value || null })}>
@@ -57,7 +57,7 @@ export function CaseToolbar({ resultCount }: { resultCount: number }) {
   const hasFilters = ["q", "status", "risk", "type"].some((k) => params.get(k));
 
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-y border-stroke bg-surface px-4 py-1.5">
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-2 border-b border-stroke bg-surface px-3 py-2">
       <Toolbar aria-label="Queue commands" size="small" className="!p-0">
         <Button
           appearance="subtle"
@@ -87,13 +87,15 @@ export function CaseToolbar({ resultCount }: { resultCount: number }) {
         aria-label="Search cases"
         value={search}
         onChange={(_, d) => setSearch(d.value)}
-        className="w-72"
+        className="w-44"
       />
       <FilterSelect label="Status" param="status" options={CASE_STATUSES} labels={STATUS_LABELS} />
       <FilterSelect label="Risk" param="risk" options={RISK_TIERS} labels={RISK_LABELS} />
       <FilterSelect label="Type" param="type" options={CUSTOMER_TYPES} labels={CUSTOMER_TYPE_LABELS} />
-      <div className="ml-auto flex items-center gap-2 text-fg-muted" aria-live="polite">
-        {(isPending || refreshing) && <Spinner size="extra-tiny" aria-label="Loading" />}
+      <div className="relative ml-auto flex items-center text-[12px] whitespace-nowrap text-fg-muted" aria-live="polite">
+        {(isPending || refreshing) && (
+          <Spinner size="extra-tiny" aria-label="Loading" className="absolute right-full mr-2" />
+        )}
         <span>
           {resultCount} {resultCount === 1 ? "case" : "cases"}
         </span>

@@ -20,12 +20,11 @@ export function NavLinks({ isAdmin }: { isAdmin: boolean }) {
             <Link
               href={href}
               aria-current={active ? "page" : undefined}
-              className={`relative flex h-9 items-center gap-2.5 rounded px-3 text-[13px] focus-visible:outline-2 focus-visible:outline-brand ${
-                active ? "bg-surface font-semibold text-fg shadow-[0_0_0_1px_var(--color-stroke)]" : "text-fg hover:bg-[#ebebeb]"
+              className={`flex h-8 items-center gap-2.5 rounded-lg px-2.5 text-[13px] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand ${
+                active ? "bg-black/[0.06] font-medium text-fg" : "text-fg hover:bg-black/[0.04]"
               }`}
             >
-              {active && <span aria-hidden className="absolute top-2 bottom-2 left-0 w-[3px] rounded bg-brand" />}
-              <Icon className={active ? "text-brand" : "text-fg-muted"} />
+              <Icon className={`shrink-0 ${active ? "text-brand" : "text-fg-muted"}`} />
               {label}
             </Link>
           </li>

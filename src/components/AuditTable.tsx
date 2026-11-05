@@ -24,12 +24,12 @@ const COLUMNS: Column<AuditRow>[] = [
     header: "Record",
     render: (r) => (
       <div className="leading-tight">
-        <div className="font-semibold">{r.entityId}</div>
-        <div className="text-[12px] text-fg-muted">{r.entityType}</div>
+        <div className="font-medium">{r.entityId}</div>
+        <div className="font-mono text-[11px] text-fg-muted">{r.entityType}</div>
       </div>
     ),
   },
-  { key: "action", header: "Action", render: (r) => r.action },
+  { key: "action", header: "Action", render: (r) => <span className="font-mono text-[12px]">{r.action}</span> },
   {
     key: "change",
     header: "Status change",

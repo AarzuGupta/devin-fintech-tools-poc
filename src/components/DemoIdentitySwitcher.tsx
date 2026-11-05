@@ -34,7 +34,7 @@ export function DemoIdentitySwitcher({ current, users }: { current: DemoUser; us
 
   return (
     <div className="flex items-center gap-2">
-      <span className="hidden rounded border border-[#f4bfab] bg-[#fdf6f3] px-2 py-0.5 text-xs text-[#8a3707] md:inline">
+      <span className="hidden rounded-full border border-[#f2dcb0] bg-[#fdf6ea] px-2.5 py-0.5 text-[12px] text-[#8a4b00] md:inline">
         Demo impersonation · not real authentication
       </span>
       <Menu

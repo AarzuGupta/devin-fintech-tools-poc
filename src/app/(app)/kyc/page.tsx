@@ -56,17 +56,19 @@ export default async function KycQueuePage({ searchParams }: { searchParams: Pro
         meta={
           <span data-testid="queue-summary">
             {summary.pending} pending · {summary.escalated} escalated ·{" "}
-            <span className={summary.overdue ? "font-semibold text-[#b10e1c]" : ""}>{summary.overdue} overdue</span>
+            <span className={summary.overdue ? "font-medium text-danger" : ""}>{summary.overdue} overdue</span>
           </span>
         }
       />
-      <CaseToolbar resultCount={rows.length} />
-      <div className="relative flex min-h-0 flex-1">
-        <div className="min-w-0 flex-1 overflow-auto bg-surface">
-          <CaseTable rows={rows} selectedId={params.case ?? null} />
+      <div className="relative flex min-h-0 flex-1 gap-3 px-6 pb-6">
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-stroke bg-surface shadow-card">
+          <CaseToolbar resultCount={rows.length} />
+          <div className="min-h-0 flex-1 overflow-auto">
+            <CaseTable rows={rows} selectedId={params.case ?? null} />
+          </div>
         </div>
         {(detail || detailError) && (
-          <div className="absolute inset-y-0 right-0 z-20 w-[440px] max-w-full border-l border-stroke shadow-[-4px_0_12px_rgba(0,0,0,0.06)] xl:static xl:shadow-none">
+          <div className="absolute top-0 right-6 bottom-6 z-20 w-[384px] max-w-[calc(100%-3rem)] overflow-hidden rounded-xl border border-stroke bg-surface shadow-float xl:static xl:max-w-none xl:shrink-0 xl:shadow-card">
             {detail ? (
               <CaseDetailPanel detail={detail} role={actor.role} closeHref={closeHref} />
             ) : (

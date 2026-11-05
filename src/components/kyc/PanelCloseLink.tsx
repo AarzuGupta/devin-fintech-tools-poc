@@ -9,7 +9,7 @@ export function PanelCloseLink({ href }: { href: string }) {
       href={href}
       scroll={false}
       aria-label="Close case details"
-      className="grid h-8 w-8 place-items-center rounded hover:bg-stroke-subtle focus-visible:outline-2 focus-visible:outline-brand"
+      className="grid h-7 w-7 place-items-center rounded-lg text-fg-muted hover:bg-black/[0.05] hover:text-fg focus-visible:outline-2 focus-visible:outline-brand"
     >
       <Dismiss20Regular />
     </Link>

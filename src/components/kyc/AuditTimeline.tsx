@@ -9,9 +9,9 @@ export function AuditTimeline({ events }: { events: AuditEventView[] }) {
   return (
     <ol className="space-y-3" data-testid="decision-history">
       {events.map((e) => (
-        <li key={e.id} className="relative border-l-2 border-stroke pl-3">
+        <li key={e.id} className="relative border-l border-stroke pl-3.5">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className="font-semibold">{DECISION_LABELS[e.action] ?? e.action}</span>
+            <span className="font-medium">{DECISION_LABELS[e.action] ?? e.action}</span>
             <span className="text-fg-muted">
               {STATUS_LABELS[e.previousState ?? ""] ?? e.previousState ?? "—"} → {STATUS_LABELS[e.newState ?? ""] ?? e.newState ?? "—"}
             </span>
@@ -22,7 +22,7 @@ export function AuditTimeline({ events }: { events: AuditEventView[] }) {
             <span>·</span>
             <time dateTime={new Date(e.createdAt).toISOString()}>{formatDateTime(e.createdAt)}</time>
           </div>
-          {e.reason && <p className="mt-1 rounded bg-[#fafafa] px-2 py-1.5 text-[13px]">{e.reason}</p>}
+          {e.reason && <p className="mt-1.5 rounded-lg bg-canvas px-2.5 py-2 text-[13px]">{e.reason}</p>}
         </li>
       ))}
     </ol>

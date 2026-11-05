@@ -10,8 +10,8 @@ import { PanelCloseLink } from "./PanelCloseLink";
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="border-t border-stroke px-5 py-4">
-      <h3 className="mb-3 text-[13px] font-semibold tracking-wide text-fg-muted uppercase">{title}</h3>
+    <section className="border-t border-stroke-subtle px-5 py-4">
+      <h3 className="mb-3 text-[11px] font-semibold tracking-[0.06em] text-fg-subtle uppercase">{title}</h3>
       {children}
     </section>
   );
@@ -21,7 +21,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
       <dt className="text-[12px] text-fg-muted">{label}</dt>
-      <dd className="mt-0.5">{children}</dd>
+      <dd className="mt-0.5 text-fg">{children}</dd>
     </div>
   );
 }
@@ -40,10 +40,10 @@ export function CaseDetailPanel({ detail, role, closeHref }: { detail: CaseDetai
 
   return (
     <aside aria-label={`Case ${detail.id} details`} className="flex h-full flex-col bg-surface" data-testid="case-panel">
-      <div className="flex items-start justify-between gap-3 px-5 pt-4 pb-3">
+      <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-4">
         <div className="min-w-0">
-          <p className="text-[12px] text-fg-muted">KYC case</p>
-          <h2 className="truncate text-lg font-semibold">{detail.id}</h2>
+          <p className="text-[11px] font-semibold tracking-[0.06em] text-fg-subtle uppercase">KYC case</p>
+          <h2 className="mt-0.5 truncate text-[17px] leading-6 font-semibold tracking-[-0.01em]">{detail.id}</h2>
           <p className="truncate text-fg-muted">{detail.customerName}</p>
         </div>
         <div className="flex items-center gap-2">
@@ -78,7 +78,7 @@ export function CaseDetailPanel({ detail, role, closeHref }: { detail: CaseDetai
             </div>
             <Field label="Assigned reviewer">{detail.assignedReviewer?.name ?? "Unassigned"}</Field>
             <Field label="Review deadline">
-              <span className={overdue ? "font-semibold text-[#b10e1c]" : ""}>
+              <span className={overdue ? "font-medium text-danger" : ""}>
                 {formatDateTime(detail.reviewDeadline)}
                 {overdue && " (overdue)"}
               </span>
@@ -90,18 +90,18 @@ export function CaseDetailPanel({ detail, role, closeHref }: { detail: CaseDetai
         </Section>
 
         <Section title="Verification signals">
-          <ul className="space-y-2.5">
+          <ul className="divide-y divide-stroke-subtle rounded-[10px] border border-stroke">
             {detail.signals.map((s) => (
-              <li key={s.id} className="flex gap-2">
+              <li key={s.id} className="flex gap-2.5 px-3 py-2.5">
                 <span className="mt-0.5 shrink-0">
                   <SignalOutcomeIcon outcome={s.outcome} />
                 </span>
                 <div>
-                  <div className="font-semibold">
+                  <div className="font-medium">
                     {SIGNAL_LABELS[s.type] ?? s.type}{" "}
                     <span className="font-normal text-fg-muted">· {s.outcome === "REVIEW" ? "Needs review" : s.outcome === "PASS" ? "Pass" : "Fail"}</span>
                   </div>
-                  <p className="text-[12px] text-fg-muted">{s.explanation}</p>
+                  <p className="mt-0.5 text-[12px] text-fg-muted">{s.explanation}</p>
                 </div>
               </li>
             ))}

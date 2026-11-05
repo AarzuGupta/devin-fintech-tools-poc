@@ -35,9 +35,13 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
   return (
     <>
       <PageHeader title="Audit log" description="Append-only record of decisions across internal tools (most recent 200)." />
-      <AuditSearch count={rows.length} />
-      <div className="min-h-0 flex-1 overflow-auto bg-surface">
-        <AuditTable rows={rows} />
+      <div className="flex min-h-0 flex-1 px-6 pb-6">
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-stroke bg-surface shadow-card">
+          <AuditSearch count={rows.length} />
+          <div className="min-h-0 flex-1 overflow-auto">
+            <AuditTable rows={rows} />
+          </div>
+        </div>
       </div>
     </>
   );

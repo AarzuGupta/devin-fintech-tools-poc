@@ -44,25 +44,25 @@ export function DataTable<T>({
   };
 
   return (
-    <table className="w-full border-collapse text-left text-[13px]" aria-label={label}>
-      <thead className="sticky top-0 z-10 bg-surface">
+    <table className="w-full border-collapse text-left text-[13px] tabular-nums" aria-label={label}>
+      <thead className="sticky top-0 z-10 bg-[#fafafb]">
         <tr className="border-b border-stroke">
           {columns.map((col) => {
             const active = sort && col.sortKey === sort.field;
             const ariaSort = active ? (sort.dir === "asc" ? "ascending" : "descending") : col.sortKey ? "none" : undefined;
             return (
-              <th key={col.key} scope="col" aria-sort={ariaSort} className={`h-9 px-3 font-semibold text-fg ${col.className ?? ""}`}>
+              <th key={col.key} scope="col" aria-sort={ariaSort} className={`h-9 px-3 text-[12px] font-medium ${active ? "text-fg" : "text-fg-muted"} ${col.className ?? ""}`}>
                 {col.sortKey && onSort ? (
                   <button
                     type="button"
                     onClick={() => onSort(col.sortKey!)}
-                    className="-mx-1 inline-flex items-center gap-1 rounded px-1 py-0.5 whitespace-nowrap hover:bg-stroke-subtle focus-visible:outline-2 focus-visible:outline-brand"
+                    className="group -mx-1.5 inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 whitespace-nowrap hover:bg-black/[0.04] hover:text-fg focus-visible:outline-2 focus-visible:outline-brand"
                   >
                     {col.header}
                     {active ? (
                       sort.dir === "asc" ? <ArrowSortUp16Regular /> : <ArrowSortDown16Regular />
                     ) : (
-                      <ArrowSort16Regular className="text-fg-subtle" />
+                      <ArrowSort16Regular className="text-fg-subtle opacity-50 group-hover:opacity-100 group-focus-visible:opacity-100" />
                     )}
                   </button>
                 ) : (
@@ -92,12 +92,12 @@ export function DataTable<T>({
                 tabIndex={onRowClick ? 0 : undefined}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
                 onKeyDown={onRowClick ? (e) => handleKey(e, row) : undefined}
-                className={`border-b border-stroke-subtle ${onRowClick ? "cursor-pointer focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand" : ""} ${
-                  selected ? "bg-brand-subtle" : onRowClick ? "hover:bg-[#f5f5f5]" : ""
+                className={`border-b border-stroke-subtle last:border-b-0 ${onRowClick ? "cursor-pointer focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand" : ""} ${
+                  selected ? "bg-brand-subtle shadow-[inset_3px_0_0_var(--color-brand)]" : onRowClick ? "hover:bg-[#f7f7f9]" : ""
                 }`}
               >
                 {columns.map((col) => (
-                  <td key={col.key} className={`h-10 px-3 align-middle ${col.className ?? ""}`}>
+                  <td key={col.key} className={`h-11 px-3 align-middle ${col.className ?? ""}`}>
                     {col.render(row)}
                   </td>
                 ))}

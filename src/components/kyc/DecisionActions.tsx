@@ -48,7 +48,7 @@ export function DecisionActions({ caseId, status, decisions, readOnlyReason }: D
 
   if (decisions.length === 0) {
     return (
-      <p className="rounded border border-stroke bg-[#fafafa] px-3 py-2 text-fg-muted" data-testid="decision-readonly">
+      <p className="rounded-[10px] bg-canvas px-3 py-2.5 text-fg-muted" data-testid="decision-readonly">
         {readOnlyReason}
       </p>
     );

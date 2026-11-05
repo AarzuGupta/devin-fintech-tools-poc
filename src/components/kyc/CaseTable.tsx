@@ -12,7 +12,7 @@ const COLUMNS: Column<CaseRow>[] = [
     key: "id",
     header: "Case ID",
     sortKey: "id",
-    render: (r) => <span className="font-semibold whitespace-nowrap text-brand">{r.id}</span>,
+    render: (r) => <span className="font-medium whitespace-nowrap text-brand">{r.id}</span>,
   },
   {
     key: "customer",
@@ -20,7 +20,7 @@ const COLUMNS: Column<CaseRow>[] = [
     sortKey: "customerId",
     render: (r) => (
       <div className="leading-tight">
-        <div className="font-mono text-[12px]">{r.customerId}</div>
+        <div className="font-mono text-[12px] text-fg">{r.customerId}</div>
         <div className="max-w-[180px] truncate text-[12px] text-fg-muted" title={r.customerName}>{r.customerName}</div>
       </div>
     ),
@@ -41,7 +41,7 @@ const COLUMNS: Column<CaseRow>[] = [
     header: "Review deadline",
     sortKey: "reviewDeadline",
     render: (r) => (
-      <span className={`inline-flex items-center gap-1 whitespace-nowrap ${r.overdue ? "font-semibold text-[#b10e1c]" : ""}`}>
+      <span className={`inline-flex items-center gap-1 whitespace-nowrap ${r.overdue ? "font-medium text-danger" : ""}`}>
         {r.overdue && <Warning16Filled aria-hidden />}
         {formatDate(r.reviewDeadline)}
         {r.overdue && <span className="sr-only">(overdue)</span>}
