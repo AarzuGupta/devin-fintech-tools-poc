@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Role values: VIEWER | ANALYST | ADMIN (validated in src/lib/auth/roles.ts)
+model User {
+  id            String       @id
+  name          String
+  email         String       @unique
+  role          String
+  assignedCases KycCase[]    @relation("AssignedReviewer")
+  auditEvents   AuditEvent[]
+}
+
+// Status values: PENDING | ESCALATED | APPROVED | REJECTED (see src/lib/domain/kyc.ts)
+model KycCase {
+  id                 String               @id
+  customerId         String
+  customerName       String
+  customerType       String // INDIVIDUAL | BUSINESS
+  country            String
+  riskTier           String // LOW | MEDIUM | HIGH
+  reviewReason       String
+  status             String               @default("PENDING")
+  assignedReviewerId String?
+  assignedReviewer   User?                @relation("AssignedReviewer", fields: [assignedReviewerId], references: [id])
+  createdAt          DateTime
+  updatedAt          DateTime             @updatedAt
+  reviewDeadline     DateTime
+  decidedAt          DateTime?
+  signals            VerificationSignal[]
+
+  @@index([status])
+  @@index([riskTier])
+}
+
+// Outcome values: PASS | REVIEW | FAIL
+model VerificationSignal {
+  id          String  @id @default(cuid())
+  caseId      String
+  case        KycCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  type        String
+  outcome     String
+  explanation String
+
+  @@index([caseId])
+}
+
+// Generic, append-only audit trail reusable across internal tools.
+model AuditEvent {
+  id            String   @id @default(cuid())
+  entityType    String
+  entityId      String
+  actorId       String
+  actor         User     @relation(fields: [actorId], references: [id])
+  action        String
+  previousState String?
+  newState      String?
+  reason        String?
+  createdAt     DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
