@@ -41,8 +41,8 @@ Sign-in is **demo impersonation, not authentication**: anyone can choose any ide
 | Identity | Role | Can do |
 | --- | --- | --- |
 | Priya Shah | Viewer | Read the KYC queue and case details (read-only); read the refunds dashboard |
-| Marcus Lee, Elena Rossi, Tomás Alvarez | Analyst | Viewer access + approve / reject / escalate **pending** cases |
-| Jordan Blake | Admin | Analyst access + resolve **escalated** cases + view the global audit log |
+| Marcus Lee, Elena Rossi, Tomás Alvarez | Analyst | Viewer access + approve / reject / escalate **pending** cases (approve only for low/medium risk) |
+| Jordan Blake | Admin | Analyst access + approve **high-risk** cases + resolve **escalated** cases + view the global audit log |
 
 All three roles hold `refunds:read`; the dashboard has no write actions for any role. Anonymous users are redirected to sign-in and cannot read any case or refund data. Every service function checks permissions itself, so reads and writes are protected even if the UI is bypassed.
 
@@ -55,6 +55,7 @@ PENDING ──approve──▶ APPROVED  (final)
 ```
 
 - Analysts can act on any pending case; the assigned reviewer is informational.
+- **High-risk approval policy:** only admins (`kyc:approve-high-risk`) can approve a `HIGH`-risk case. Analysts can still reject or escalate it; the panel shows a disabled Approve button with the reason, and the service refuses an analyst approval with `FORBIDDEN` and writes nothing. Low/medium-risk cases are unchanged. The policy applies to new decisions only: earlier decisions and audit history are not modified.
 - Reject and escalate require a reason of 10–1000 characters; approve accepts an optional note.
 - Approved and rejected cases are final; any further change is refused.
 - Each successful decision updates the case and writes an audit event in a single transaction. The update is conditional on the status that was read (`UPDATE … WHERE id = ? AND status = ?`), so two concurrent decisions cannot both succeed; the loser gets a conflict error and no audit event is written. Optionally the client sends `expectedStatus`, so acting on a stale screen is also rejected.
