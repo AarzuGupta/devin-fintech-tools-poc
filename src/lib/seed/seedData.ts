@@ -4,7 +4,7 @@
  */
 import type { CaseStatus, CustomerType, RiskTier, SignalOutcome } from "@/lib/domain/kyc";
 
-export const SEED_BASE_DATE = new Date("2026-11-03T16:00:00.000Z");
+export const SEED_BASE_DATE = new Date("2026-11-05T16:00:00.000Z");
 const CASE_COUNT = 40;
 
 export const SEED_USERS = [
@@ -155,8 +155,8 @@ export function buildSeedData() {
     const reviews = signals.filter((s) => s.outcome === "REVIEW").length;
     const riskTier: RiskTier = fails > 0 ? "HIGH" : reviews > 1 ? "MEDIUM" : rand() < 0.55 ? "LOW" : "MEDIUM";
 
-    const createdAt = new Date(SEED_BASE_DATE.getTime() - Math.floor(rand() * 14 * DAY) - Math.floor(rand() * 8) * HOUR);
-    const slaDays = riskTier === "HIGH" ? 2 : riskTier === "MEDIUM" ? 5 : 10;
+    const createdAt = new Date(SEED_BASE_DATE.getTime() - Math.floor(rand() * 10 * DAY) - Math.floor(rand() * 8) * HOUR);
+    const slaDays = riskTier === "HIGH" ? 3 : riskTier === "MEDIUM" ? 7 : 14;
     const reviewDeadline = new Date(createdAt.getTime() + slaDays * DAY);
 
     const assignedReviewerId = rand() < 0.85 ? pick(ANALYSTS) : null;

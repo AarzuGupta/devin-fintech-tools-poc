@@ -179,3 +179,15 @@ export async function decideCase(db: PrismaClient, actor: Actor | null, rawInput
     throw error;
   }
 }
+
+/** Open-work counts shown in the queue header. */
+export async function getQueueSummary(db: PrismaClient, actor: Actor | null, now: Date = new Date()) {
+  requirePermission(actor, "kyc:read");
+  const open = { status: { in: ["PENDING", "ESCALATED"] } };
+  const [pending, escalated, overdue] = await Promise.all([
+    db.kycCase.count({ where: { status: "PENDING" } }),
+    db.kycCase.count({ where: { status: "ESCALATED" } }),
+    db.kycCase.count({ where: { ...open, reviewDeadline: { lt: now } } }),
+  ]);
+  return { pending, escalated, overdue };
+}
