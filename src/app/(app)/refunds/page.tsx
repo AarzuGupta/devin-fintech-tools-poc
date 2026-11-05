@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
 import { RefundDetailPanel } from "@/components/refunds/RefundDetailPanel";
@@ -41,10 +40,10 @@ export default async function RefundsPage({ searchParams }: { searchParams: Prom
         description="Monitor refunds reported by the finance service. Read-only: refunds are issued in the payment provider."
         meta={<span className="text-[12px]">Source: Finance API (local mock)</span>}
       />
-      {/* Not keyed: on filter changes React keeps the current view during the transition (toolbar spinner), and the fallback appears only on first load. */}
-      <Suspense fallback={<RefundsLoading />}>
-        <RefundsWorkspace actor={actor} params={params} />
-      </Suspense>
+      {/* No Suspense/loading boundary here: in production builds a streamed boundary left
+          the table un-hydrated long enough to drop clicks (same failure as KYC's removed
+          loading.tsx). Pending state is shown by the toolbar and sidebar spinners instead. */}
+      <RefundsWorkspace actor={actor} params={params} />
     </>
   );
 }
@@ -126,28 +125,6 @@ async function RefundsWorkspace({ actor, params }: { actor: Actor; params: Recor
             )}
           </div>
         )}
-      </div>
-    </div>
-  );
-}
-
-function RefundsLoading() {
-  return (
-    <div className="flex min-h-0 flex-1 flex-col" aria-busy="true" data-testid="refunds-loading">
-      <div className="px-6 pb-3">
-        <p className="mb-2 text-[12px] text-fg-muted" role="status">Loading refunds from the finance service…</p>
-        <div className="grid grid-cols-4 gap-3">
-          {Array.from({ length: 4 }, (_, i) => (
-            <div key={i} className="h-[82px] animate-pulse rounded-xl border border-stroke bg-surface shadow-card" />
-          ))}
-        </div>
-      </div>
-      <div className="flex min-h-0 flex-1 px-6 pb-6">
-        <div className={`${cardClass} gap-2 p-3`}>
-          {Array.from({ length: 8 }, (_, i) => (
-            <div key={i} className="h-7 animate-pulse rounded-md bg-[#f0f0f2]" />
-          ))}
-        </div>
       </div>
     </div>
   );

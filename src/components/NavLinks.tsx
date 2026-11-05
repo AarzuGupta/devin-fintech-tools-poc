@@ -1,7 +1,8 @@
 "use client";
 
 import { ClipboardTaskListLtr20Regular, Flag20Regular, History20Regular, ReceiptMoney20Regular } from "@fluentui/react-icons";
-import Link from "next/link";
+import { Spinner } from "@fluentui/react-components";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 
 const SECTIONS = [
@@ -36,6 +37,7 @@ export function NavLinks({ isAdmin }: { isAdmin: boolean }) {
                     >
                       <Icon className={`shrink-0 ${active ? "text-brand" : "text-fg-muted"}`} />
                       {label}
+                      <PendingIndicator />
                     </Link>
                   </li>
                 );
@@ -54,4 +56,10 @@ export function NavLinks({ isAdmin }: { isAdmin: boolean }) {
       </div>
     </div>
   );
+}
+
+/** Shows while the linked page is loading (pages render server-side with no route-level loading UI). */
+function PendingIndicator() {
+  const { pending } = useLinkStatus();
+  return pending ? <Spinner size="extra-tiny" aria-label="Loading" className="ml-auto" /> : null;
 }

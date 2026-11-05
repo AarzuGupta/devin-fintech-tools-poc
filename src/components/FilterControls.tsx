@@ -1,7 +1,7 @@
 "use client";
 
 import { SearchBox, Select } from "@fluentui/react-components";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useUrlState } from "@/hooks/useUrlState";
 
 /** Changing a filter returns to the first page (no-op for unpaginated views). */
@@ -22,7 +22,8 @@ export function FilterSelect({
   defaultValue?: string;
 }) {
   const { params, setParams } = useUrlState();
-  const id = useId();
+  // Deterministic (one filter per param per page): useId() values differed between SSR and hydration on filtered URLs.
+  const id = `filter-${param}`;
   return (
     <div className="flex items-center gap-1.5">
       <label htmlFor={id} className="text-[12px] font-medium text-fg-muted">
