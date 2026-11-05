@@ -4,7 +4,7 @@ const PORT = 3100;
 // E2E_DEV=1 runs the same specs against `next dev` instead of a production build.
 const DEV = process.env.E2E_DEV === "1";
 const env = {
-  DATABASE_URL: "file:./e2e.db",
+  DATABASE_URL: "file:./e2e.db?connection_limit=1",
   SESSION_SECRET: "e2e-secret-e2e-secret-e2e-secret-12345",
   REFUNDS_API_BASE_URL: `http://127.0.0.1:${PORT}/api/mock-finance/v1`,
   REFUNDS_API_TOKEN: "e2e-mock-token",
