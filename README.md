@@ -1,77 +1,91 @@
 # Fintech Internal Tools — Devin Proof of Concept
 
-A working prototype, built with Devin, of two of the client's three Power Apps internal tools: a **KYC review queue** and a **refunds dashboard**. It tests whether a fintech engineering team can use Devin to build *and then maintain* internal apps on a shared, code-owned foundation. It is a feasibility study, not a full Power Apps replacement.
+A Devin-assisted proof of concept exploring whether a fintech engineering team could build and maintain custom internal applications rather than rely exclusively on a low-code platform such as Microsoft Power Apps.
 
-**Live demo:** _pending — replaced with the verified Railway URL after deployment._ No Devin login is needed; pick any demo identity on the sign-in page.
+The prototype contains two representative tools: a KYC review workflow with server-enforced decisions and audit history, and a read-only refunds dashboard backed by a simulated API. Both share application infrastructure, UI patterns, and authorization checks. The project evaluates application feasibility and maintainability — not full Power Apps feature parity.
 
-> **Demo only.** All data is synthetic. Sign-in is impersonation (anyone can pick Admin). No real refunds are processed. Not production-secure or compliance-certified.
+[GitHub repository](https://github.com/AarzuGupta/devin-fintech-tools-poc) · [KYC PR #1](https://github.com/AarzuGupta/devin-fintech-tools-poc/pull/1) · [Refunds PR #2](https://github.com/AarzuGupta/devin-fintech-tools-poc/pull/2) · [Maintenance PR #3](https://github.com/AarzuGupta/devin-fintech-tools-poc/pull/3)
 
-PRs (stacked, in build order): [#1 KYC review](https://github.com/AarzuGupta/devin-fintech-tools-poc/pull/1) → [#2 Refunds dashboard](https://github.com/AarzuGupta/devin-fintech-tools-poc/pull/2) → [#3 Policy change (maintenance)](https://github.com/AarzuGupta/devin-fintech-tools-poc/pull/3)
+**Demo:** there is no hosted deployment; run it locally (below). The Devin Cloud preview used during development requires a Devin login and is not a public link.
 
-## What it demonstrates
+> **Demonstration only:** All records are synthetic, demo identities can be freely impersonated, and no real refunds are processed. This is not production-secure or compliance-certified.
 
-| Power Apps concern | In this prototype |
+## What you can try
+
+| Application | Capabilities |
 |---|---|
-| Data-driven app (gallery + form) | KYC queue: search, filter, sort, case detail with verification signals; refunds list with metrics, filters, paging, detail |
-| Business rules and approvals | KYC: Pending → Approved / Rejected / Escalated; Escalated → Approved / Rejected (admin); approved/rejected are final; reject/escalate need a reason (≥ 10 chars) |
-| Role-based security | Viewer / Analyst / Admin permissions checked on the server for every read and decision, not just hidden in the UI |
-| Audit trail | Each decision writes an audit event in the same transaction as the status change; admin-only global audit log at `/audit` |
-| Connectors | Refunds read from a typed adapter over a local mock finance API, including simulated failures (`/refunds?simulate=unavailable`, also `slow`, `timeout`, `error`, `malformed`) |
-| Reuse across apps | Refunds reused the app shell, auth/permissions, table, filter, URL-state and detail-panel components from KYC |
-| Change requests | PR #3: "analysts may not approve high-risk cases; admins can" — enforced in the domain/service layer using the stored risk tier, shown in the UI as a disabled Approve with an explanation, covered by tests |
+| KYC review (`/kyc`) | Search, filter, and sort seeded cases; inspect verification signals and history; approve, reject, or escalate pending cases; review admin-only audit events (`/audit`). |
+| Refunds (`/refunds`) | Inspect synthetic refund transactions and summary metrics, search and filter records, open details, and exercise simulated upstream failures. No payment actions are executed. |
+| Shared foundation | App shell, table/detail patterns, URL-driven filters, demo sessions and server-side permissions, typed business logic, and regression tests. |
 
-## Demo identities
+## KYC business rules
 
-| Name | Role | Can do |
-|---|---|---|
-| Aarzu Gupta | Viewer | Read KYC and refunds |
-| Marcus Lee, Elena Rossi, Tomás Alvarez | Analyst | Decide pending cases (approve only low/medium risk) |
-| Jordan Blake | Admin | Everything, incl. high-risk approval, escalated cases, audit log |
+Pending cases can be approved, rejected, or escalated, subject to role permissions. Analysts cannot approve high-risk cases; only admins can approve them. Analysts can still reject or escalate high-risk pending cases, and the interface shows them a disabled Approve button with an explanation. Low- and medium-risk approvals retain their prior behavior. Escalated cases require an admin for final resolution; approved and rejected cases are terminal.
 
-Switch identity from the menu in the top-right.
+Restrictions are enforced by the server using the case's database-stored risk tier, not a value sent by the browser. Unauthorized attempts do not change case status and write no audit event. Successful decisions use a conditional status update and write an audit event in the same database transaction. Rejections and escalations require a reason of at least 10 characters.
+
+The refunds dashboard is intentionally read-only and uses a local mock API rather than a payment provider. To see the simulated unavailable-provider state, visit `/refunds?simulate=unavailable` (also `slow`, `timeout`, `error`, `malformed`).
 
 ## Run locally
 
-Requires Node.js 24 (pinned in `package.json`; other versions untested).
+Requirements: Node.js 24 (pinned in `package.json` `engines`; other versions untested) and npm.
 
 ```bash
 npm ci
-cp .env.example .env        # set SESSION_SECRET to a random value of at least 32 characters
-npm run setup               # Prisma client + SQLite schema + synthetic seed
-npm run dev                 # http://localhost:3000
+cp .env.example .env
+# Edit .env and set SESSION_SECRET to a long random value (at least 32 characters).
+npm run setup
+npm run dev
 ```
+
+Open http://localhost:3000, choose a demo identity, and explore the applications.
 
 | Command | Purpose |
 |---|---|
-| `npm test` | Vitest unit/integration tests (115) |
-| `npm run test:e2e` | Playwright tests against a production build (first run: `npx playwright install chromium`) |
-| `npm run typecheck` / `npm run lint` | TypeScript / ESLint |
-| `npm run build` / `npm start` | Production build / serve |
-| `npm run db:reset` | Wipe and reseed the local database |
-| `npm run start:deploy` | Hosted start: `prisma db push` (never resets), seed only if empty, `next start` on `$PORT` |
+| `npm run setup` | Generate Prisma client, initialize SQLite, and seed synthetic demo data |
+| `npm run dev` | Development server |
+| `npm run build` / `npm start` | Build / serve the production app |
+| `npm run start:deploy` | Hosting start: apply the schema without resetting, seed only an empty database, then serve on `$PORT` |
+| `npm run db:reset` | Reset and reseed locally (deletes demo changes) |
+| `npm test` | Vitest unit/integration suite |
+| `npm run test:e2e` | Playwright production-build browser tests (may require `npx playwright install chromium`) |
+| `npm run typecheck` / `npm run lint` | TypeScript / ESLint checks |
 
-## Deployment
+## Demo identities
 
-Railway, from this repo, with SQLite on a persistent volume. `railway.json` sets the build (`npm run build`; `prisma generate` runs on install), start (`npm run start:deploy`) and a `/sign-in` health check. Environment: volume mounted at `/data`, `DATABASE_URL=file:/data/app.db`, `SESSION_SECRET` (≥ 32 random chars), `REFUNDS_API_TOKEN` (any placeholder; the mock API and its client share it). Railway provides `PORT`. Data persists across restarts and redeploys because the start script never resets or reseeds a non-empty database.
+| Name | Role | Access |
+|---|---|---|
+| Aarzu Gupta | Viewer | Read KYC and refunds; no decisions |
+| Marcus Lee, Elena Rossi, Tomás Alvarez | Analyst | View and act on pending cases, subject to the risk-based approval policy |
+| Jordan Blake | Admin | All permitted case actions, high-risk approval, escalated-case resolution, and global audit access |
+
+Demo sign-in is impersonation, not authentication. Anyone with access can select any identity, including Admin. The signed HTTP-only cookie stores the selected user's ID; the server resolves permissions independently. Do not use real customer data or secrets.
 
 ## Architecture
 
-Next.js 15 (App Router) modular monolith, TypeScript, Prisma 6 + SQLite, Fluent UI v9 + Tailwind, Vitest, Playwright.
+**Stack:** Next.js 15 (App Router), TypeScript, Fluent UI v9, Tailwind CSS, Prisma 6, SQLite, Vitest, and Playwright. The application is a modular monolith: shared infrastructure without prematurely introducing a generalized internal-tools platform.
 
 ```text
-src/lib/domain/        Pure business rules (KYC transitions + risk policy, refund metrics)
-src/lib/auth/          Demo session cookie (user ID only), roles, permissions
-src/lib/services/      Server-side reads/decisions with permission checks and atomic audit writes
-src/lib/integrations/  Typed refunds API adapter + local mock finance API
-src/app/               Pages (KYC, refunds, audit, sign-in), server actions, mock API route
-src/components/        Shared shell, table, filters, badges, detail panel; app-specific views
-prisma/, src/lib/seed/ Schema and deterministic synthetic seed
-tests/, e2e/           Unit/integration tests; production-build browser tests
+prisma/                 SQLite schema and seed entry points
+src/lib/seed/           Deterministic synthetic KYC dataset
+src/lib/domain/         Pure KYC workflow/policy rules and refund metrics
+src/lib/auth/           Demo sessions, role resolution, permissions
+src/lib/services/       Server-side application services and atomic audit writes
+src/lib/integrations/   Typed refunds API adapter and local mock finance API
+src/app/actions/        Server action boundaries and validation
+src/app/                KYC, refunds, audit, and sign-in pages; mock API route
+src/components/         Shared components and app-specific presentation
+tests/ and e2e/         Unit/integration tests and production browser checks
 ```
 
-## Evidence and limitations
+The KYC workflow is database-backed; refunds uses a typed mock API. The second application reused the app shell, authorization, table, URL-state, error/date helpers, and visual patterns; it still required app-specific toolbar and table wiring. One deployable keeps the PoC simple but would require isolation and operational review before supporting a larger app portfolio.
 
-- **Evidence:** git history and the three PRs record each checkpoint, test run and fix; [`docs/experiment_evidence.md`](docs/experiment_evidence.md) covers the refunds extension. Agent elapsed time (git timestamps, not human effort): refunds extension 20 min 41 s; policy change 12 min 7 s.
-- **Tests (latest):** 115/115 Vitest; type-check and lint clean; Playwright 5/5 on a production build (15/15 over three repeats). Playwright against `next dev` is unreliable on the build VM (also on the pre-change baseline); cause unresolved. No CI is configured.
-- **Defects caught during the build:** production-only lost clicks from route-level loading/Suspense boundaries (fixed in both apps), a hydration mismatch in filters, and test-helper bugs. Production-build browser tests were needed to catch the first.
-- **Not validated:** SSO/real authentication, real KYC or payment integrations, data governance and retention, monitoring, backups, multi-app isolation (one deployable, one SQLite file), metrics at real data volumes, and visual authoring by non-engineers.
+## Engineering evidence and limitations
+
+The work was staged as build → extend → maintain, preserved in three stacked draft PRs. Devin reported that the refunds extension took 20 minutes 41 seconds of agent elapsed time. The subsequent KYC policy change took 12 minutes 7 seconds through its policy/docs commits, with further development-server investigation afterward. These are agent-reported elapsed times from Git timestamps, not measured human effort or a Power Apps speed benchmark.
+
+After the maintenance change, Devin reported 115/115 Vitest tests, clean type-check and lint, 5/5 production-build browser tests, and 15/15 across three production runs. Earlier first-pass attempts revealed test-helper, typing, hydration, and production-only lost-click bugs that were corrected. Development-server browser tests remain unreliable; the cause is unresolved. The repository has no CI. See [`docs/experiment_evidence.md`](docs/experiment_evidence.md) and the PR histories for checkpoints and detailed failures.
+
+This prototype does not validate enterprise SSO, real KYC/payment integrations, managed data governance, production security, sensitive-data retention, scalable analytics, monitoring, backup/recovery, deployment controls, or nontechnical visual app authoring. The demo uses SQLite, a freely selectable role, and application-level audit history. Real deployment would require dedicated security, compliance, and operational review.
+
+**Evaluation takeaway:** The prototype demonstrates that Devin can build and evolve useful internal application code with meaningful reuse. It does not establish full platform replacement, lower total cost of ownership, or production readiness; those require independent evaluation of licensing, engineering labor, integration, governance, and ongoing operations.
