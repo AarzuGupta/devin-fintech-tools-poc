@@ -40,7 +40,7 @@ Sign-in is **demo impersonation, not authentication**: anyone can choose any ide
 
 | Identity | Role | Can do |
 | --- | --- | --- |
-| Priya Shah | Viewer | Read the KYC queue and case details (read-only); read the refunds dashboard |
+| Aarzu Gupta | Viewer | Read the KYC queue and case details (read-only); read the refunds dashboard |
 | Marcus Lee, Elena Rossi, Tomás Alvarez | Analyst | Viewer access + approve / reject / escalate **pending** cases (approve only for low/medium risk) |
 | Jordan Blake | Admin | Analyst access + approve **high-risk** cases + resolve **escalated** cases + view the global audit log |
 

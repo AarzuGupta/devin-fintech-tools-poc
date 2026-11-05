@@ -9,7 +9,7 @@ export const SEED_BASE_DATE = new Date("2026-11-05T16:00:00.000Z");
 const CASE_COUNT = 40;
 
 export const SEED_USERS = [
-  { id: "u-viewer", name: "Priya Shah", email: "priya.shah@example.test", role: "VIEWER" },
+  { id: "u-viewer", name: "Aarzu Gupta", email: "aarzu.gupta@example.test", role: "VIEWER" },
   { id: "u-analyst-1", name: "Marcus Lee", email: "marcus.lee@example.test", role: "ANALYST" },
   { id: "u-analyst-2", name: "Elena Rossi", email: "elena.rossi@example.test", role: "ANALYST" },
   { id: "u-analyst-3", name: "Tomás Alvarez", email: "tomas.alvarez@example.test", role: "ANALYST" },

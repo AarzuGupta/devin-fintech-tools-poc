@@ -10,7 +10,7 @@ async function signInAs(page: Page, name: string) {
 const rows = (page: Page) => page.locator("tbody tr[data-row-id]");
 
 test("viewer filters, sorts, pages and opens a refund; state survives reload", async ({ page }) => {
-  await signInAs(page, "Priya Shah");
+  await signInAs(page, "Aarzu Gupta");
   await page.getByRole("link", { name: "Refunds" }).click();
   await page.waitForURL("**/refunds");
   await expect(page.getByRole("heading", { name: "Refunds", level: 1 })).toBeVisible();

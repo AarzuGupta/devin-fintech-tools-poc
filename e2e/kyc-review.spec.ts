@@ -65,7 +65,7 @@ test("viewer has read-only access and anonymous users are redirected", async ({ 
   await page.goto("/kyc");
   await expect(page).toHaveURL(/\/sign-in/);
 
-  await signInAs(page, "Priya Shah");
+  await signInAs(page, "Aarzu Gupta");
   await page.locator("tbody tr[data-row-id]").first().click();
   const panel = page.getByTestId("case-panel");
   await expect(panel).toBeVisible();
