@@ -4,6 +4,8 @@ const PORT = 3100;
 const env = {
   DATABASE_URL: "file:./e2e.db",
   SESSION_SECRET: "e2e-secret-e2e-secret-e2e-secret-12345",
+  REFUNDS_API_BASE_URL: `http://127.0.0.1:${PORT}/api/mock-finance/v1`,
+  REFUNDS_API_TOKEN: "e2e-mock-token",
 };
 
 export default defineConfig({

@@ -2,6 +2,7 @@
  * Deterministic synthetic data. All names, identifiers and signals are fictional.
  * Same seed + same base date => identical dataset on every run.
  */
+import { mulberry32 } from "./random";
 import type { CaseStatus, CustomerType, RiskTier, SignalOutcome } from "@/lib/domain/kyc";
 
 export const SEED_BASE_DATE = new Date("2026-11-05T16:00:00.000Z");
@@ -15,16 +16,6 @@ export const SEED_USERS = [
   { id: "u-admin", name: "Jordan Blake", email: "jordan.blake@example.test", role: "ADMIN" },
 ] as const;
 
-function mulberry32(seed: number) {
-  let a = seed;
-  return () => {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
 
 const FIRST = ["Amara", "Liam", "Sofia", "Noah", "Aisha", "Mateo", "Hannah", "Ravi", "Chloe", "Kenji", "Fatima", "Oliver", "Zara", "Lucas", "Mei", "Daniel"];
 const LAST = ["Okafor", "Novak", "Haddad", "Fischer", "Patel", "Moreau", "Kowalski", "Tanaka", "Silva", "Brennan", "Lindqvist", "Mensah", "Costa", "Ibrahim"];
