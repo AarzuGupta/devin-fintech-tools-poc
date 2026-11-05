@@ -1,30 +1,12 @@
-import type { ReactNode } from "react";
 import { RiskIndicator, SignalOutcomeIcon, StatusBadge } from "@/components/Badges";
+import { DetailField as Field, DetailSection as Section } from "@/components/DetailPanel";
+import { PanelCloseLink } from "@/components/PanelCloseLink";
 import type { Role } from "@/lib/auth/roles";
 import { availableDecisions, isCaseStatus, isFinalStatus, isOverdue } from "@/lib/domain/kyc";
 import { CUSTOMER_TYPE_LABELS, SIGNAL_LABELS, formatDateTime } from "@/lib/format";
 import type { CaseDetail } from "@/lib/services/kycService";
 import { AuditTimeline } from "./AuditTimeline";
 import { DecisionActions } from "./DecisionActions";
-import { PanelCloseLink } from "./PanelCloseLink";
-
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="border-t border-stroke-subtle px-5 py-4">
-      <h3 className="mb-3 text-[11px] font-semibold tracking-[0.06em] text-fg-subtle uppercase">{title}</h3>
-      {children}
-    </section>
-  );
-}
-
-function Field({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div>
-      <dt className="text-[12px] text-fg-muted">{label}</dt>
-      <dd className="mt-0.5 text-fg">{children}</dd>
-    </div>
-  );
-}
 
 function readOnlyReason(role: Role, status: string): string {
   if (isCaseStatus(status) && isFinalStatus(status)) return "This case is finalized. No further actions are available.";
