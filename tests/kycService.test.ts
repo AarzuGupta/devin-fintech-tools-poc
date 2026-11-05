@@ -6,6 +6,7 @@ import { decideCase, getCase, getQueueSummary, KYC_ENTITY, listCases } from "@/l
 import { actors, auditCount, findCaseIdByStatus, prisma, resetDb } from "./helpers";
 
 const REASON = "Customer failed to provide proof of address after two requests.";
+const NOT_HIGH_RISK = { riskTier: { not: "HIGH" } };
 
 beforeEach(resetDb);
 
@@ -150,6 +151,55 @@ describe("decideCase: authorization", () => {
   });
 });
 
+describe("decideCase: high-risk approval policy", () => {
+  const HIGH = { riskTier: "HIGH" };
+
+  it("refuses an analyst approval of a high-risk case and writes nothing", async () => {
+    const caseId = await findCaseIdByStatus("PENDING", 0, HIGH);
+    const before = await auditCount();
+    await expect(decideCase(prisma, actors.analyst, { caseId, decision: "APPROVE", reason: "Looks fine to me overall." })).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      message: "High-risk cases can only be approved by an admin.",
+    });
+    expect((await prisma.kycCase.findUniqueOrThrow({ where: { id: caseId } })).status).toBe("PENDING");
+    expect(await auditCount()).toBe(before);
+  });
+
+  it("lets analysts reject and escalate high-risk cases", async () => {
+    const toReject = await findCaseIdByStatus("PENDING", 0, HIGH);
+    const toEscalate = await findCaseIdByStatus("PENDING", 1, HIGH);
+    await expect(decideCase(prisma, actors.analyst, { caseId: toReject, decision: "REJECT", reason: REASON })).resolves.toMatchObject({ status: "REJECTED" });
+    await expect(
+      decideCase(prisma, actors.analyst, { caseId: toEscalate, decision: "ESCALATE", reason: "Adverse media hit needs admin review." }),
+    ).resolves.toMatchObject({ status: "ESCALATED" });
+  });
+
+  it("lets admins approve high-risk cases, pending or escalated, with an audit event", async () => {
+    for (const status of ["PENDING", "ESCALATED"]) {
+      const caseId = await findCaseIdByStatus(status, 0, HIGH);
+      const result = await decideCase(prisma, actors.admin, { caseId, decision: "APPROVE" });
+      expect(result).toMatchObject({ status: "APPROVED" });
+      const event = await prisma.auditEvent.findUniqueOrThrow({ where: { id: result.auditEventId } });
+      expect(event).toMatchObject({ entityId: caseId, actorId: actors.admin.id, action: "APPROVE", newState: "APPROVED" });
+    }
+  });
+
+  it.each(["LOW", "MEDIUM"])("still lets analysts approve %s-risk cases", async (riskTier) => {
+    const caseId = await findCaseIdByStatus("PENDING", 0, { riskTier });
+    await expect(decideCase(prisma, actors.analyst, { caseId, decision: "APPROVE" })).resolves.toMatchObject({ status: "APPROVED" });
+  });
+
+  it("does not alter existing decisions or history on high-risk cases", async () => {
+    const decided = await prisma.kycCase.findMany({ where: { riskTier: "HIGH", status: { in: ["APPROVED", "REJECTED"] } } });
+    expect(decided.length).toBeGreaterThan(0);
+    for (const c of decided) {
+      const detail = await getCase(prisma, actors.analyst, c.id);
+      expect(detail.status).toBe(c.status);
+      expect(detail.history.length).toBeGreaterThan(0);
+    }
+  });
+});
+
 describe("decideCase: concurrency", () => {
   const secondInstance = new PrismaClient();
   afterAll(() => secondInstance.$disconnect());
@@ -177,7 +227,7 @@ describe("decideCase: concurrency", () => {
   });
 
   it("is safe across separate database connections (simulating two server instances)", async () => {
-    const caseId = await findCaseIdByStatus("PENDING", 2);
+    const caseId = await findCaseIdByStatus("PENDING", 2, NOT_HIGH_RISK);
     const results = await Promise.allSettled([
       decideCase(prisma, actors.analyst, { caseId, decision: "APPROVE" }),
       decideCase(secondInstance, actors.analyst2, { caseId, decision: "REJECT", reason: REASON }),

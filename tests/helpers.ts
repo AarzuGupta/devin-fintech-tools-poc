@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import type { Actor, Role } from "@/lib/auth/roles";
 import { applySeed } from "@/lib/seed/applySeed";
@@ -17,8 +18,8 @@ const ACTORS: Record<string, Actor> = {
 
 export const actors = ACTORS as Record<"viewer" | "analyst" | "analyst2" | "admin", Actor>;
 
-export async function findCaseIdByStatus(status: string, skip = 0): Promise<string> {
-  const c = await prisma.kycCase.findMany({ where: { status }, orderBy: { id: "asc" }, skip, take: 1 });
+export async function findCaseIdByStatus(status: string, skip = 0, where: Prisma.KycCaseWhereInput = {}): Promise<string> {
+  const c = await prisma.kycCase.findMany({ where: { ...where, status }, orderBy: { id: "asc" }, skip, take: 1 });
   if (!c[0]) throw new Error(`No seeded case with status ${status}`);
   return c[0].id;
 }

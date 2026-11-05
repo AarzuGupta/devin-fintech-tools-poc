@@ -35,6 +35,10 @@ export function isCaseStatus(value: string): value is CaseStatus {
   return (CASE_STATUSES as readonly string[]).includes(value);
 }
 
+export function isRiskTier(value: string): value is RiskTier {
+  return (RISK_TIERS as readonly string[]).includes(value);
+}
+
 export function reasonRequired(decision: Decision): boolean {
   return decision === "REJECT" || decision === "ESCALATE";
 }
@@ -50,9 +54,17 @@ export function canRoleDecide(role: Role, status: CaseStatus): boolean {
   return false;
 }
 
+/** Review policy: final approval of high-risk cases is reserved for admins. */
+export function canRoleApprove(role: Role, riskTier: RiskTier): boolean {
+  return riskTier !== "HIGH" || hasPermission(role, "kyc:approve-high-risk");
+}
+
+export const HIGH_RISK_APPROVAL_MESSAGE = "High-risk cases can only be approved by an admin.";
+
 /** Decisions the given role can currently take on a case (for UI affordances). */
-export function availableDecisions(role: Role, status: CaseStatus): Decision[] {
-  return canRoleDecide(role, status) ? allowedDecisions(status) : [];
+export function availableDecisions(role: Role, status: CaseStatus, riskTier: RiskTier): Decision[] {
+  if (!canRoleDecide(role, status)) return [];
+  return allowedDecisions(status).filter((d) => d !== "APPROVE" || canRoleApprove(role, riskTier));
 }
 
 export type DecisionEvaluation =
@@ -61,14 +73,15 @@ export type DecisionEvaluation =
 
 /**
  * Pure business rule check for a decision. Order matters: a finalized case is
- * reported as an invalid transition regardless of role, then permissions, then
- * input validation.
+ * reported as an invalid transition regardless of role, then permissions
+ * (including the high-risk approval policy), then input validation.
  */
 export function evaluateDecision(
   role: Role,
   currentStatus: CaseStatus,
   decision: Decision,
   rawReason: string | null | undefined,
+  riskTier: RiskTier,
 ): DecisionEvaluation {
   if (isFinalStatus(currentStatus)) {
     return {
@@ -94,6 +107,9 @@ export function evaluateDecision(
           ? "Only admins can resolve escalated cases."
           : "Your role cannot make decisions on KYC cases.",
     };
+  }
+  if (decision === "APPROVE" && !canRoleApprove(role, riskTier)) {
+    return { ok: false, code: "FORBIDDEN", message: HIGH_RISK_APPROVAL_MESSAGE };
   }
   const reason = rawReason?.trim() ? rawReason.trim() : null;
   if (reasonRequired(decision) && (!reason || reason.length < MIN_REASON_LENGTH)) {

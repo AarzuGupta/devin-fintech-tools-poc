@@ -2,7 +2,15 @@ import { RiskIndicator, SignalOutcomeIcon, StatusBadge } from "@/components/Badg
 import { DetailField as Field, DetailSection as Section } from "@/components/DetailPanel";
 import { PanelCloseLink } from "@/components/PanelCloseLink";
 import type { Role } from "@/lib/auth/roles";
-import { availableDecisions, isCaseStatus, isFinalStatus, isOverdue } from "@/lib/domain/kyc";
+import {
+  HIGH_RISK_APPROVAL_MESSAGE,
+  allowedDecisions,
+  availableDecisions,
+  isCaseStatus,
+  isFinalStatus,
+  isOverdue,
+  isRiskTier,
+} from "@/lib/domain/kyc";
 import { CUSTOMER_TYPE_LABELS, SIGNAL_LABELS, formatDateTime } from "@/lib/format";
 import type { CaseDetail } from "@/lib/services/kycService";
 import { AuditTimeline } from "./AuditTimeline";
@@ -17,7 +25,11 @@ function readOnlyReason(role: Role, status: string): string {
 
 export function CaseDetailPanel({ detail, role, closeHref }: { detail: CaseDetail; role: Role; closeHref: string }) {
   const status = isCaseStatus(detail.status) ? detail.status : "PENDING";
-  const decisions = availableDecisions(role, status);
+  // Unknown tiers are treated as high risk so the approval restriction fails closed.
+  const riskTier = isRiskTier(detail.riskTier) ? detail.riskTier : "HIGH";
+  const decisions = availableDecisions(role, status, riskTier);
+  const approvalRestricted =
+    decisions.length > 0 && allowedDecisions(status).includes("APPROVE") && !decisions.includes("APPROVE");
   const overdue = isOverdue(detail.reviewDeadline, status);
 
   return (
@@ -42,6 +54,7 @@ export function CaseDetailPanel({ detail, role, closeHref }: { detail: CaseDetai
             status={detail.status}
             decisions={decisions}
             readOnlyReason={decisions.length ? null : readOnlyReason(role, detail.status)}
+            approvalRestriction={approvalRestricted ? `${HIGH_RISK_APPROVAL_MESSAGE} You can reject or escalate it.` : null}
           />
         </Section>
 
