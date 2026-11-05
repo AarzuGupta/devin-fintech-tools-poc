@@ -9,6 +9,7 @@ export default defineConfig({
     env: {
       DATABASE_URL: "file:./test.db",
       SESSION_SECRET: "test-secret-test-secret-test-secret-123",
+      REFUNDS_API_TOKEN: "test-mock-token",
     },
     fileParallelism: false,
     pool: "forks",
