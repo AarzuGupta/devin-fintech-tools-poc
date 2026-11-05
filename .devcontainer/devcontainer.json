@@ -1,0 +1,14 @@
+{
+  "name": "Fintech internal tools PoC",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:24-bookworm",
+  "hostRequirements": { "cpus": 2 },
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postAttachCommand": "npm start",
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": { "label": "Internal tools app", "onAutoForward": "openBrowser" }
+  },
+  "customizations": {
+    "codespaces": { "openFiles": ["README.md"] }
+  }
+}
