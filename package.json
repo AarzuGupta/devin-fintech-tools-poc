@@ -11,6 +11,8 @@
     "db:push": "prisma db push --skip-generate",
     "db:seed": "prisma db seed",
     "db:reset": "prisma db push --force-reset --skip-generate && prisma db seed",
+    "db:seed-if-empty": "tsx prisma/seedIfEmpty.ts",
+    "start:deploy": "prisma db push --skip-generate && npm run db:seed-if-empty && next start",
     "setup": "prisma generate && npm run db:reset",
     "test": "vitest run",
     "test:watch": "vitest",
