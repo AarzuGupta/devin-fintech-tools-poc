@@ -8,6 +8,7 @@ import {
   DECISIONS,
   RISK_TIERS,
   evaluateDecision,
+  isRiskTier,
   isCaseStatus,
   riskRank,
   statusRank,
@@ -140,11 +141,12 @@ export async function decideCase(db: PrismaClient, actor: Actor | null, rawInput
       const current = await tx.kycCase.findUnique({ where: { id: input.caseId } });
       if (!current) throw new AppError("NOT_FOUND", `Case ${input.caseId} was not found.`);
       if (!isCaseStatus(current.status)) throw new Error(`Corrupt status on ${current.id}`);
+      if (!isRiskTier(current.riskTier)) throw new Error(`Corrupt risk tier on ${current.id}`);
       if (input.expectedStatus && input.expectedStatus !== current.status) {
         throw new AppError("CONFLICT", "This case was updated by someone else. Refresh and try again.");
       }
 
-      const evaluation = evaluateDecision(actor.role, current.status, input.decision, input.reason);
+      const evaluation = evaluateDecision(actor.role, current.status, input.decision, input.reason, current.riskTier);
       if (!evaluation.ok) throw new AppError(evaluation.code, evaluation.message);
 
       const now = new Date();

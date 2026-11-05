@@ -65,10 +65,61 @@ test("viewer has read-only access and anonymous users are redirected", async ({ 
   await page.goto("/kyc");
   await expect(page).toHaveURL(/\/sign-in/);
 
-  await signInAs(page, "Priya Shah");
+  await signInAs(page, "Aarzu Gupta");
   await page.locator("tbody tr[data-row-id]").first().click();
   const panel = page.getByTestId("case-panel");
   await expect(panel).toBeVisible();
   await expect(panel.getByRole("button", { name: "Approve" })).toHaveCount(0);
   await expect(panel.getByTestId("decision-readonly")).toBeVisible();
+});
+
+test("analysts cannot approve high-risk cases but can still escalate; admins can approve them", async ({ page }) => {
+  await signInAs(page, "Elena Rossi");
+  const panel = page.getByTestId("case-panel");
+
+  await page.goto("/kyc?status=PENDING&risk=MEDIUM");
+  const mediumRow = page.locator("tbody tr[data-row-id]").first();
+  const mediumId = (await mediumRow.getAttribute("data-row-id"))!;
+  await mediumRow.click();
+  await page.waitForURL(new RegExp(`case=${mediumId}`));
+  await expect(panel.getByRole("heading", { name: mediumId })).toBeVisible();
+  await expect(panel.getByRole("button", { name: "Approve" })).toBeEnabled();
+  await expect(panel.getByTestId("approval-restriction")).toHaveCount(0);
+
+  await page.goto("/kyc?status=PENDING&risk=HIGH");
+  const highRow = page.locator("tbody tr[data-row-id]").last();
+  const caseId = (await highRow.getAttribute("data-row-id"))!;
+  await highRow.click();
+  await page.waitForURL(new RegExp(`case=${caseId}`));
+  await expect(panel.getByRole("heading", { name: caseId })).toBeVisible();
+  const approve = panel.getByRole("button", { name: "Approve" });
+  await expect(approve).toBeDisabled();
+  await expect(approve).toHaveAttribute("aria-describedby", "approval-restriction");
+  await expect(panel.getByTestId("approval-restriction")).toHaveText(
+    "High-risk cases can only be approved by an admin. You can reject or escalate it.",
+  );
+  await approve.click({ force: true });
+  await expect(page.getByRole("alertdialog")).toHaveCount(0);
+  await expect(panel.getByRole("button", { name: "Reject" })).toBeEnabled();
+
+  await panel.getByRole("button", { name: "Escalate" }).click();
+  const dialog = page.getByRole("alertdialog");
+  await dialog.getByRole("textbox").fill(`E2E: high-risk case needs admin approval (${caseId}).`);
+  await dialog.getByRole("button", { name: "Confirm escalate" }).click();
+  await expect(panel.getByTestId("status-badge")).toHaveText("Escalated");
+
+  await page.getByRole("button", { name: /Demo identity/ }).click();
+  await page.getByRole("menuitemradio", { name: /Jordan Blake/ }).click();
+  await page.waitForURL("**/kyc");
+  await page.goto(`/kyc?case=${caseId}`);
+  await expect(panel.getByRole("heading", { name: caseId })).toBeVisible();
+  await expect(panel.getByTestId("approval-restriction")).toHaveCount(0);
+  await panel.getByRole("button", { name: "Approve" }).click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "Confirm approve" }).click();
+  await expect(panel.getByTestId("status-badge")).toHaveText("Approved");
+  await page.reload();
+  const history = panel.getByTestId("decision-history");
+  await expect(history).toContainText("Pending → Escalated");
+  await expect(history).toContainText("Escalated → Approved");
+  await expect(history).toContainText("Jordan Blake");
 });

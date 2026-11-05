@@ -7,7 +7,7 @@ export default defineConfig({
     include: ["tests/**/*.test.ts"],
     globalSetup: ["tests/globalSetup.ts"],
     env: {
-      DATABASE_URL: "file:./test.db",
+      DATABASE_URL: "file:./test.db?connection_limit=1",
       SESSION_SECRET: "test-secret-test-secret-test-secret-123",
       REFUNDS_API_TOKEN: "test-mock-token",
     },

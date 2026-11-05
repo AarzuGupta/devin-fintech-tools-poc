@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "postinstall": "prisma generate",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
@@ -11,6 +12,8 @@
     "db:push": "prisma db push --skip-generate",
     "db:seed": "prisma db seed",
     "db:reset": "prisma db push --force-reset --skip-generate && prisma db seed",
+    "db:seed-if-empty": "tsx prisma/seedIfEmpty.ts",
+    "start:deploy": "prisma db push --skip-generate && npm run db:seed-if-empty && next start",
     "setup": "prisma generate && npm run db:reset",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -24,9 +27,11 @@
     "@fluentui/react-icons": "^2.0.345",
     "@prisma/client": "^6.19.3",
     "next": "^15.5.29",
+    "prisma": "^6.19.3",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "server-only": "^0.0.1",
+    "tsx": "^4.23.15",
     "zod": "^3.25.76"
   },
   "devDependencies": {
@@ -39,11 +44,12 @@
     "eslint": "^9.39.5",
     "eslint-config-next": "^15.5.29",
     "postcss": "^8.5.32",
-    "prisma": "^6.19.3",
     "tailwindcss": "^4.3.4",
-    "tsx": "^4.23.15",
     "typescript": "^5.9.3",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^3.2.7"
+  },
+  "engines": {
+    "node": "24.x"
   }
 }

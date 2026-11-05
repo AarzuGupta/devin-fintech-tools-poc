@@ -56,6 +56,21 @@ describe("decideCaseAction (server action boundary)", () => {
     expect(event.actorId).toBe("u-analyst-2");
   });
 
+  it("enforces the high-risk approval policy for analysts at the action boundary", async () => {
+    signInAs("u-analyst-1");
+    const highRisk = await prisma.kycCase.findFirstOrThrow({ where: { status: "PENDING", riskTier: "HIGH" }, orderBy: { id: "asc" } });
+    expect(await decideCaseAction({ caseId: highRisk.id, decision: "APPROVE", role: "ADMIN" })).toMatchObject({ ok: false });
+    expect(await decideCaseAction({ caseId: highRisk.id, decision: "APPROVE" })).toMatchObject({
+      ok: false,
+      code: "FORBIDDEN",
+      message: "High-risk cases can only be approved by an admin.",
+    });
+    expect(await auditCount(highRisk.id)).toBe(0);
+
+    signInAs("u-admin");
+    expect(await decideCaseAction({ caseId: highRisk.id, decision: "APPROVE" })).toMatchObject({ ok: true, data: { status: "APPROVED" } });
+  });
+
   it("surfaces domain errors as structured results", async () => {
     signInAs("u-analyst-1");
     const caseId = await findCaseIdByStatus("APPROVED");

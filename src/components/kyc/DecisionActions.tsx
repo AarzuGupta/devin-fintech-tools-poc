@@ -17,7 +17,7 @@ import {
   ToastTitle,
   useToastController,
 } from "@fluentui/react-components";
-import { ArrowUp20Regular, Checkmark20Regular, Dismiss20Regular } from "@fluentui/react-icons";
+import { ArrowUp20Regular, Checkmark20Regular, Dismiss20Regular, LockClosed16Regular } from "@fluentui/react-icons";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { decideCaseAction } from "@/app/actions/kyc";
@@ -36,9 +36,11 @@ interface DecisionActionsProps {
   status: string;
   decisions: Decision[];
   readOnlyReason: string | null;
+  /** Shown with a disabled Approve button when policy prevents this role from approving. */
+  approvalRestriction?: string | null;
 }
 
-export function DecisionActions({ caseId, status, decisions, readOnlyReason }: DecisionActionsProps) {
+export function DecisionActions({ caseId, status, decisions, readOnlyReason, approvalRestriction }: DecisionActionsProps) {
   const router = useRouter();
   const { dispatchToast } = useToastController(TOASTER_ID);
   const [active, setActive] = useState<Decision | null>(null);
@@ -88,12 +90,27 @@ export function DecisionActions({ caseId, status, decisions, readOnlyReason }: D
   return (
     <>
       <div className="flex flex-wrap gap-2">
+        {approvalRestriction && (
+          <Button appearance="secondary" icon={META.APPROVE.icon} disabledFocusable aria-describedby="approval-restriction">
+            {META.APPROVE.label}
+          </Button>
+        )}
         {decisions.map((d) => (
           <Button key={d} appearance={d === "APPROVE" ? "primary" : "secondary"} icon={META[d].icon} onClick={() => open(d)}>
             {META[d].label}
           </Button>
         ))}
       </div>
+      {approvalRestriction && (
+        <p
+          id="approval-restriction"
+          className="mt-2.5 flex items-start gap-1.5 text-[12px] text-fg-muted"
+          data-testid="approval-restriction"
+        >
+          <LockClosed16Regular className="mt-px shrink-0" aria-hidden />
+          {approvalRestriction}
+        </p>
+      )}
 
       <Dialog open={active !== null} onOpenChange={(_, data) => !data.open && !isPending && setActive(null)} modalType="alert">
         <DialogSurface aria-describedby={undefined}>
