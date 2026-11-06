@@ -1,6 +1,6 @@
 # Fintech Internal Tools — Devin Proof of Concept
 
-A Devin-assisted proof of concept exploring whether a fintech engineering team could build and maintain custom internal applications rather than rely exclusively on a low-code platform such as Microsoft Power Apps.
+A proof of concept, built with Devin Cloud, exploring whether a fintech engineering team could build and maintain custom internal applications rather than rely exclusively on a low-code platform such as Microsoft Power Apps.
 
 The prototype contains two representative tools: a KYC review workflow with server-enforced decisions and audit history, and a read-only refunds dashboard backed by a simulated API. Both share application infrastructure, UI patterns, and authorization checks. The project evaluates application feasibility and maintainability — not full Power Apps feature parity.
 
@@ -11,6 +11,18 @@ The prototype contains two representative tools: a KYC review workflow with serv
 The Codespace installs dependencies, seeds the synthetic database, builds, and starts the production app on port 3000, which opens in a browser tab (first start takes a few minutes). It needs a GitHub account with access to this repository and uses that account's Codespaces quota. There is no hosted deployment; you can also run it locally (below).
 
 > **Demonstration only:** All records are synthetic, demo identities can be freely impersonated, and no real refunds are processed. This is not production-secure or compliance-certified.
+
+## How this maps to Power Apps
+
+| Power Apps capability | What the prototype shows | Not shown |
+|---|---|---|
+| Data sources (Dataverse, connectors) | Prisma/SQLite for app-owned data; a typed, validated adapter to an external finance API (mocked) with timeout and outage handling | Managed connector catalog; real KYC/payment providers |
+| Screens: galleries, forms, filters | Searchable, sortable tables; detail panels; shareable URL filters; confirmation dialogs | Drag-and-drop authoring by non-developers |
+| Business logic (Power Fx) | KYC state machine and risk-based approval policy as typed, unit-tested code | |
+| Security roles | Role permissions enforced on the server for every read and write | Entra ID SSO; environment and DLP policies |
+| Auditing | Each decision and its audit event are written in one transaction; admin-only audit log | Managed retention and compliance tooling |
+| ALM (solutions, environments) | Git history, reviewed PRs, CI on every PR, a reproducible Codespace | Managed hosting, environments, monitoring |
+| Building the next app | The refunds app reused the KYC app's shell, auth and components; a compliance policy change shipped with tests in about 13 minutes | Multi-year maintenance cost |
 
 ## What you can try
 
@@ -84,7 +96,16 @@ The KYC workflow is database-backed; refunds uses a typed mock API. The second a
 
 ## Engineering evidence and limitations
 
-The work was staged as build → extend → maintain, preserved in three stacked draft PRs. Devin reported that the refunds extension took 20 minutes 41 seconds of agent elapsed time. The subsequent KYC policy change took 12 minutes 7 seconds through its policy/docs commits, with further development-server investigation afterward. These are agent-reported elapsed times from Git timestamps, not measured human effort or a Power Apps speed benchmark.
+The work was staged as build → extend → maintain, preserved in three PRs (now merged).
+
+**Build time** (Devin wall-clock time from Git timestamps and the session log; human effort was not measured, and this is not a Power Apps speed benchmark):
+
+| Stage | Time |
+|---|---|
+| KYC app, including tests and visual polish (session start 05:16 UTC → `c59a8d4` at 06:24) | ~68 min |
+| Refunds dashboard (→ `7a2f611` at 06:54) | ~30 min |
+| **Both tools (the prototype)** | **~1 h 40 min** |
+| Follow-ups: high-risk approval policy change (~13 min), then demo identity, hosting prep, Codespaces and CI | ~55 min |
 
 After the maintenance change, Devin reported 115/115 Vitest tests, clean type-check and lint, 5/5 production-build browser tests, and 15/15 across three production runs. Earlier first-pass attempts revealed test-helper, typing, hydration, and production-only lost-click bugs that were corrected. Development-server browser tests remain unreliable; the cause is unresolved. GitHub Actions (`.github/workflows/ci.yml`) runs type-check, lint, Vitest, and the production-build Playwright tests on every pull request and push to `main`. See [`docs/experiment_evidence.md`](docs/experiment_evidence.md) and the PR histories for checkpoints and detailed failures.
 
